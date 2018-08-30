@@ -2,6 +2,7 @@ require('./config/config');
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
+const {ObjectID} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose');
 var {Project} = require('./models/project');
@@ -12,6 +13,7 @@ const port = process.env.PORT || 3000;
 var app = express();
 app.use(bodyParser.json());
 
+// Post Projects
 app.post('/projects', (req, res) => {
     var project = new Project({
         name: req.body.name,
@@ -39,11 +41,30 @@ app.post('/projects', (req, res) => {
     })
 });
 
+// Get Projects
 app.get('/projects', (req, res) => {
     Project.find().then((projects) => {
         res.send({projects});
     }, (e) => {
         res.status(400).send(e);
+    })
+})
+
+// Get Full data by Project ID
+app.get('/projects/:id', (req, res) => {
+    var id = req.params.id;
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Project.findById(id).then((project) => {
+        if(!project) {
+            return res.status(404).send();
+        }
+        res.send({project});
+    }).catch((e) => {
+        res.status(400).send();
     })
 })
 
