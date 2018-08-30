@@ -68,6 +68,51 @@ app.get('/projects/:id', (req, res) => {
     })
 })
 
+// Update Projects/:id
+app.patch('/projects/:id', (req, res) => {
+    var id = req.params.id;
+    var body = _.pick(req.body, ['text', 'completed']);
+
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send();
+    }
+
+    if(_.isBoolean(body.completed) && body.completed) {
+        body.completed = new Date().getTime();
+    } else {
+        body.completed = false;
+        body.completedAt = null; 
+    }
+
+    Project.findByIdAndUpdate(id, {$set: body}, {new: true}).then((project) => {
+        if(!project){
+            return res.status(404).send();
+        }
+
+        res.send({project});
+    }).catch((e) => {
+        res.status(400).send();
+    })
+})
+
+// DELETE Projects/:id
+app.delete('/projects/:id', (req, res) => {
+    var id = req.params.id;
+
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send();
+    }
+
+    Project.findByIdAndRemove(id).then((project) => {
+        if(!project){
+            return res.status(404).send();
+        }
+        res.send(project);
+    }).catch((e) => {
+        res.status(404).send();
+    })
+})
+
 //User
 app.post('/users', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
