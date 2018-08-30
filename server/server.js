@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 var {mongoose} = require('./db/mongoose');
 var {Project} = require('./models/project');
 var {User} = require('./models/user');
-
+var {authenticate} = require('./middleware/authenticate');
 const port = process.env.PORT || 3000;
 
 var app = express();
@@ -67,6 +67,10 @@ app.get('/users', (req, res) => {
     }, (e) => {
         res.status(400).send(e)
     })
+})
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
 })
 
 app.listen(port, () => {
